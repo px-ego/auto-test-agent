@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动测试代理</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="app-header">
+        <h1>自动测试代理</h1>
+    </header>
+    <div id="api-error" class="api-error" role="alert" hidden></div>
+
+    <!-- Phase Navigation -->
+    <nav class="phase-nav">
+        <div class="phase-nav-item active" data-phase="prepare">
+            <span class="phase-dot"></span>
+            <span>准备</span>
+        </div>
+        <div class="phase-nav-line" data-line="0"></div>
+        <div class="phase-nav-item" data-phase="plan">
+            <span class="phase-dot"></span>
+            <span>测试计划</span>
+        </div>
+        <div class="phase-nav-line" data-line="1"></div>
+        <div class="phase-nav-item" data-phase="execute">
+            <span class="phase-dot"></span>
+            <span>执行</span>
+        </div>
+        <div class="phase-nav-line" data-line="2"></div>
+        <div class="phase-nav-item" data-phase="report">
+            <span class="phase-dot"></span>
+            <span>报告</span>
+        </div>
+    </nav>
+
+    <!-- Phase 1: Prepare -->
+    <section class="phase-section active" id="phase-prepare">
+        <div class="prepare-layout">
+            <!-- Left: Upload -->
+            <div class="card upload-area">
+                <div class="prepare-section-title">设备知识库</div>
+                <div id="drop-zone" class="drop-zone">
+                    <div class="drop-zone-icon">&#128196;</div>
+                    <div class="drop-zone-text">拖拽文件到此处</div>
+                    <div class="drop-zone-hint">支持 .md 和 .zip 格式</div>
+                    <input type="file" id="file-input" accept=".md,.zip" multiple hidden>
+                </div>
+                <ul id="file-list" class="file-chips"></ul>
+                <div class="upload-actions" id="prepare-actions" style="display:none;">
+                    <button id="btn-generate-plan" class="btn btn-primary">生成新测试计划</button>
+                </div>
+            </div>
+
+            <!-- Right: Plan Library -->
+            <div class="card plan-library-area">
+                <div class="prepare-section-title">已保存的测试计划</div>
+                <div id="plan-library" class="plan-grid"></div>
+            </div>
+        </div>
+        <div class="task-library">
+            <h2 class="prepare-section-title">任务记录</h2>
+            <div id="task-library" class="task-list"></div>
+        </div>
+    </section>
+
+    <!-- Phase 2: Plan -->
+    <section class="phase-section" id="phase-plan">
+        <div class="plan-phase-layout">
+            <div class="plan-toolbar">
+                <div class="plan-toolbar-left">
+                    <button id="btn-back-prepare" class="btn btn-ghost">← 返回</button>
+                    <span id="plan-name-label" class="plan-name-label"></span>
+                </div>
+                <div class="plan-toolbar-right">
+                    <button id="btn-regenerate-plan" class="btn btn-ghost">重新生成</button>
+                    <button id="btn-save-plan" class="btn btn-ghost" style="display:none;">保存</button>
+                    <button id="btn-save-as-plan" class="btn btn-ghost">另存为</button>
+                    <button id="btn-export-plan" class="btn btn-ghost">导出</button>
+                </div>
+            </div>
+
+            <div id="plan-editor" class="plan-editor" contenteditable="false"></div>
+
+            <!-- Parameters Panel -->
+            <div id="params-panel" class="params-panel" style="display:none;">
+                <div class="params-panel-header">
+                    <span class="params-panel-title">运行参数</span>
+                </div>
+                <div id="params-fields" class="params-fields"></div>
+            </div>
+
+            <div class="plan-bottom-bar">
+                <div class="review-controls">
+                    <span id="review-status" role="status">待审核</span>
+                    <input id="review-comment" type="text" maxlength="1000" aria-label="审核备注" placeholder="审核备注（可选）">
+                    <button id="btn-approve-plan" class="btn btn-primary">通过审核</button>
+                    <button id="btn-reject-plan" class="btn btn-danger">驳回</button>
+                </div>
+                <button id="btn-start-test" class="btn btn-success btn-lg" disabled>开始测试</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Phase 3: Execute -->
+    <section class="phase-section" id="phase-execute">
+        <div class="execute-toolbar">
+            <div class="execute-toolbar-left">
+                <span id="execute-summary" class="execute-summary"></span>
+            </div>
+            <div class="execute-toolbar-right" id="execute-controls">
+                <button id="btn-pause-test" class="btn btn-warning" style="display:none;">暂停</button>
+                <button id="btn-resume-test" class="btn btn-success" style="display:none;">继续</button>
+                <button id="btn-stop-test" class="btn btn-danger" style="display:none;">停止</button>
+            </div>
+        </div>
+
+        <div class="progress-track">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div id="module-cards" class="module-cards"></div>
+
+        <section id="diagnosis-panel" class="diagnosis-panel" aria-label="失败诊断" hidden>
+            <div class="diagnosis-header">
+                <h2>失败诊断</h2>
+                <span id="diagnosis-status" role="status"></span>
+                <button id="btn-stop-diagnosis" class="btn btn-danger" type="button" hidden>停止诊断</button>
+                <button id="btn-resume-diagnosis" class="btn btn-primary" type="button" hidden>继续诊断</button>
+            </div>
+            <p id="diagnosis-summary"></p>
+            <ul id="diagnosis-findings"></ul>
+            <ul id="diagnosis-recommendations"></ul>
+            <ol id="diagnosis-trace" class="diagnosis-trace"></ol>
+            <div id="diagnosis-evidence" class="diagnosis-evidence"></div>
+        </section>
+
+        <div id="execute-done-actions" class="execute-done-actions" style="display:none;">
+            <button id="btn-view-report" class="btn btn-primary btn-lg">查看报告</button>
+        </div>
+
+        <!-- Log Drawer -->
+        <div class="log-drawer" id="log-drawer">
+            <button class="log-drawer-toggle" id="log-drawer-toggle">
+                <span>详细日志</span>
+                <span class="log-drawer-arrow">&#9660;</span>
+            </button>
+            <div class="log-drawer-content">
+                <ul id="log-list" class="log-list"></ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Phase 4: Report -->
+    <section class="phase-section" id="phase-report">
+        <div class="report-layout">
+            <div class="report-toolbar">
+                <span class="report-toolbar-title">测试报告</span>
+                <div class="report-toolbar-actions">
+                    <button id="btn-show-diagnosis" class="btn btn-ghost" type="button" hidden>查看诊断</button>
+                    <button id="btn-export-html" class="btn btn-primary">导出 HTML</button>
+                    <button id="btn-new-round" class="btn btn-ghost">新一轮测试</button>
+                </div>
+            </div>
+            <pre id="report-content" class="report-content"></pre>
+        </div>
+    </section>
+
+    <script src="js/state.js"></script>
+    <script src="js/phase-manager.js"></script>
+    <script src="js/module-tracker.js"></script>
+    <script src="js/step-operations.js"></script>
+    <script src="js/step-renderer.js"></script>
+    <script src="js/step-editor.js"></script>
+    <script src="js/params-panel.js"></script>
+    <script src="js/plan-editor.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/review.js"></script>
+    <script src="js/diagnosis.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

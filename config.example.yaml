@@ -1,0 +1,27 @@
+# Copy this file to config.yaml and configure your local model service.
+llm:
+  base_url: "http://127.0.0.1:8000/v1"
+  model: "your-model"
+  api_key: "EMPTY"
+  temperature: 0.7
+  max_tokens: 4096
+station: "virtual_device"
+server:
+  host: "127.0.0.1"
+  http_port: 8080
+  ws_port: 8081
+reports:
+  output_dir: "reports"
+  format: "markdown"
+plans:
+  output_dir: "plans"
+workflow:
+  database_path: "data/workflow.sqlite3"
+diagnostics:
+  enabled: true
+  max_rounds: 4
+  max_tool_calls: 3
+  max_seconds: 90
+  llm_timeout: 20
+  tool_timeout: 2
+  allowed_ports: [22, 80, 443]

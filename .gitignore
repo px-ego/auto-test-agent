@@ -1,0 +1,52 @@
+# Local Python environments and generated files
+.venv/
+.venv-*/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Local configuration and credentials
+/config.yaml
+config.local.*
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Device records and local state
+/data/
+/.local/
+/plans/
+/reports/
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.db
+*.log
+
+# Personal notes and editor artifacts
+/docs/interview/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+Thumbs.db
+.DS_Store
+
+# Build and browser output
+build/
+dist/
+*.egg-info/
+test-results/
+playwright-report/
